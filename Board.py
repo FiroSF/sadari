@@ -22,6 +22,8 @@ class Board:
         self.displayMode = displayMode
         self.__blankSpace = blankSpace
 
+        self.alivespaces = [i for i in range(yIndex)]
+
         # player initialize
         # self.__player.assignBoard(self)
         # bridge initialize
@@ -60,18 +62,7 @@ class Board:
     def setPlayer(self, p: Player):
         self.__player = p
 
-    def makeRandomBridge(self):
-        # if not possible to assign bridge, throws exception.
-        isPossible = self.__lineCount - 1
-        for i in range(self.__lineCount-1):
-            if not self.__isLineNotFull[i] or not self.__isLineNotFull[i+1]:
-                isPossible -= 1
-
-        if not isPossible:
-            raise Exception(
-                "not enough space to assign bridge during processing")
-
-        # assign bridge
+    def irregularBridge(self):
         x1 = r.randrange(0, self.__lineCount-1)
         y1 = r.randrange(0, self.__yIndex)
         while not self.__isLineNotFull[x1] or not self.__isLineNotFull[x1+1]:
@@ -84,11 +75,52 @@ class Board:
         while self.__grid[x2][y2]:
             # print(self.__grid[x2])
             y2 = r.randrange(0, self.__yIndex)
+        return [x1, y1, x2, y2]
 
+    def regularBridge(self):
+        x1 = r.randrange(0, self.__lineCount-1)
+        x2 = x1 + 1
+
+        temp = r.randrange(0, len(self.alivespaces)-1)
+        y1 = y2 = self.alivespaces[temp]
+        del self.alivespaces[temp]
+        return [x1, y1, x2, y2]
+
+    def makeRandomBridge(self):
+        # if not possible to assign bridge, throws exception.
+        isPossible = self.__lineCount - 1
+        for i in range(self.__lineCount-1):
+            if not self.__isLineNotFull[i] or not self.__isLineNotFull[i+1]:
+                isPossible -= 1
+
+        if not isPossible:
+            raise Exception(
+                "not enough space to assign bridge during processing")
+
+        # assign bridge
+        # x1 = r.randrange(0, self.__lineCount-1)
+        # y1 = r.randrange(0, self.__yIndex)
+        # while not self.__isLineNotFull[x1] or not self.__isLineNotFull[x1+1]:
+        #     x1 = r.randrange(0, self.__lineCount-1)
+        # while self.__grid[x1][y1]:
+        #     y1 = r.randrange(0, self.__yIndex)
+
+        # x2 = x1 + 1
+        # y2 = r.randrange(0, self.__yIndex)
+        # while self.__grid[x2][y2]:
+        #     # print(self.__grid[x2])
+        #     y2 = r.randrange(0, self.__yIndex)
+
+        # temp = r.randrange(0, len(self.alivespaces)-1)
+        # y1 = y2 = self.alivespaces[temp]
+        # del self.alivespaces[temp]
+
+        x1, y1, x2, y2 = self.irregularBridge()
         bridge1: Bridge = Bridge((x1, y1))
         bridge2: Bridge = Bridge((x2, y2), bridge1)
         bridge1.connectBridge(bridge2)
         self.assignBridge(bridge1, bridge2)
+        #print(x1, y1)
 
     def assignBridge(self, bridge1: Bridge, bridge2: Bridge):
         """assigns bridges. if it's invalid, raise exception."""
